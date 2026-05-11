@@ -1,6 +1,14 @@
+import os
+
+import dotenv
 from fastapi import FastAPI, Request
 
 from database_connection import MySQLClient
+
+dotenv.load_dotenv(
+    ".env",
+    override=True,
+)
 
 app = FastAPI()
 
@@ -28,3 +36,8 @@ async def display_tables(request: Request):
     return {
         "result" : str(result)
     }
+
+@app.get("show_env")
+async def show_env(request: Request):
+    for key, value in os.environ.items():
+        print(f"{key}: {value}")
