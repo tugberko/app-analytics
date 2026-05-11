@@ -8,7 +8,6 @@ async def heartbeat(request: Request):
     print(body)
     return {"status": "ok"}
 
-
 @app.get("/")
 async def root():
-    return "Hello"  
+    return "Hello"
