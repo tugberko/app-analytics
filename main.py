@@ -37,7 +37,7 @@ async def display_tables(request: Request):
         "result" : str(result)
     }
 
-@app.get("show_env")
+@app.get("/show_env")
 async def show_env(request: Request):
     for key, value in os.environ.items():
         print(f"{key}: {value}")
