@@ -12,12 +12,12 @@ class HeartbeatHandler:
 
         await MySQLClient().execute(
             """
-            INSERT INTO app_installs (install_uuid, platform_id)
-            SELECT %s, p.id
-            FROM platforms p
-            WHERE p.name = %s ON DUPLICATE KEY
-            UPDATE
-                id = LAST_INSERT_ID(id)
+                INSERT INTO app_installs (install_uuid, platform_id)
+                SELECT %s, p.id
+                FROM platforms p
+                WHERE p.name = %s
+                ON DUPLICATE KEY UPDATE
+                    app_installs.id = LAST_INSERT_ID(app_installs.id);
             """,
             (install_uuid, platform_name)
         )
