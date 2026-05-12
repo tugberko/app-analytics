@@ -1,3 +1,9 @@
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+
 git clone https://github.com/tugberko/app-analytics.git
 
 apt install docker.io

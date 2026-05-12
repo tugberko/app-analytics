@@ -29,3 +29,5 @@ class HeartbeatHandler:
         payload = await request.json()
 
         await self._handle_installation(payload["install_uuid"], payload["platform"])
+
+        return {"ok"}

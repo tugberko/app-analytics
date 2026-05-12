@@ -4,6 +4,7 @@ import dotenv
 from fastapi import FastAPI, Request
 
 from database_connection import MySQLClient
+from handlers.heartbeat_handler import HeartbeatHandler
 
 dotenv.load_dotenv(
     ".env",
@@ -14,9 +15,9 @@ app = FastAPI()
 
 @app.post("/practivo/heartbeat")
 async def handle_heartbeat(request: Request):
-    body = await request.json()
-    print(body)
-    return {"status": "ok"}
+
+    return await HeartbeatHandler().handle(request)
+
 
 @app.get("/")
 async def root():
