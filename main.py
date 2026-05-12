@@ -12,8 +12,8 @@ dotenv.load_dotenv(
 
 app = FastAPI()
 
-@app.post("/heartbeat")
-async def heartbeat(request: Request):
+@app.post("/practivo/heartbeat")
+async def handle_heartbeat(request: Request):
     body = await request.json()
     print(body)
     return {"status": "ok"}
