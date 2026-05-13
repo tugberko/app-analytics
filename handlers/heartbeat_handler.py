@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import Request
-from pymysql.err import IntegrityError  # adjust if you're using another driver
+from pymysql.err import IntegrityError  # adjust if needed
 
 from database_connection import MySQLClient
 
@@ -17,24 +17,21 @@ class HeartbeatHandler:
     async def _get_or_create_id(
         self,
         select_query: str,
-        insert_query: str,
         select_params: tuple,
+        insert_query: str,
         insert_params: tuple,
     ) -> int:
 
-        # 1. Fast path: try SELECT
         row = await self.db.fetch_one(select_query, select_params)
         if row:
             return row["id"]
 
-        # 2. Slow path: try INSERT
         try:
             return await self.db.insert_and_get_id(
                 query=insert_query,
                 params=insert_params,
             )
 
-        # 3. Race condition fallback
         except IntegrityError:
             row = await self.db.fetch_one(select_query, select_params)
             return row["id"]
@@ -48,11 +45,11 @@ class HeartbeatHandler:
             select_query="""
                 SELECT id FROM platforms WHERE name = %s
             """,
+            select_params=(platform,),
             insert_query="""
                 INSERT INTO platforms (name)
                 VALUES (%s)
             """,
-            select_params=(platform,),
             insert_params=(platform,),
         )
 
@@ -61,11 +58,11 @@ class HeartbeatHandler:
             select_query="""
                 SELECT id FROM versions WHERE version = %s
             """,
+            select_params=(version,),
             insert_query="""
                 INSERT INTO versions (version)
                 VALUES (%s)
             """,
-            select_params=(version,),
             insert_params=(version,),
         )
 
@@ -74,11 +71,11 @@ class HeartbeatHandler:
             select_query="""
                 SELECT id FROM locales WHERE locale = %s
             """,
+            select_params=(locale,),
             insert_query="""
                 INSERT INTO locales (locale)
                 VALUES (%s)
             """,
-            select_params=(locale,),
             insert_params=(locale,),
         )
 
@@ -89,8 +86,8 @@ class HeartbeatHandler:
     async def _get_or_create_app_installation_id(self, payload: dict) -> int:
 
         platform_id, locale_id = await asyncio.gather(
-            self._get_or_create_platform_id(payload["platform"]),
-            self._get_or_create_locale_id(payload["locale"]),
+            self._get_or_create_platform_id(platform=payload["platform"]),
+            self._get_or_create_locale_id(locale=payload["locale"]),
         )
 
         return await self._get_or_create_id(
@@ -99,6 +96,7 @@ class HeartbeatHandler:
                 FROM app_installations
                 WHERE install_uuid = %s
             """,
+            select_params=(payload["install_uuid"],),
             insert_query="""
                 INSERT INTO app_installations (
                     install_uuid,
@@ -107,7 +105,6 @@ class HeartbeatHandler:
                 )
                 VALUES (%s, %s, %s)
             """,
-            select_params=(payload["install_uuid"],),
             insert_params=(
                 payload["install_uuid"],
                 platform_id,
@@ -122,8 +119,8 @@ class HeartbeatHandler:
     async def _create_heartbeat(self, payload: dict) -> int:
 
         app_installation_id, version_id = await asyncio.gather(
-            self._get_or_create_app_installation_id(payload),
-            self._get_or_create_version_id(payload["version"]),
+            self._get_or_create_app_installation_id(payload=payload),
+            self._get_or_create_version_id(version=payload["version"]),
         )
 
         return await self.db.insert_and_get_id(
@@ -151,7 +148,7 @@ class HeartbeatHandler:
     async def handle_heartbeat(self, request: Request):
         payload = await request.json()
 
-        heartbeat_id = await self._create_heartbeat(payload)
+        heartbeat_id = await self._create_heartbeat(payload=payload)
 
         return {
             "ok": True,
