@@ -1,6 +1,7 @@
 import asyncio
-
 from fastapi import Request
+from pymysql.err import IntegrityError  # adjust if you're using another driver
+
 from database_connection import MySQLClient
 
 
@@ -10,55 +11,104 @@ class HeartbeatHandler:
         self.db = MySQLClient()
 
     # -------------------------
-    # UPSERT HELPERS (SAFE)
+    # GENERIC SAFE GET-OR-CREATE
+    # -------------------------
+
+    async def _get_or_create_id(
+        self,
+        select_query: str,
+        insert_query: str,
+        select_params: tuple,
+        insert_params: tuple,
+    ) -> int:
+
+        # 1. Fast path: try SELECT
+        row = await self.db.fetch_one(select_query, select_params)
+        if row:
+            return row["id"]
+
+        # 2. Slow path: try INSERT
+        try:
+            return await self.db.insert_and_get_id(
+                query=insert_query,
+                params=insert_params,
+            )
+
+        # 3. Race condition fallback
+        except IntegrityError:
+            row = await self.db.fetch_one(select_query, select_params)
+            return row["id"]
+
+    # -------------------------
+    # LOOKUPS
     # -------------------------
 
     async def _get_or_create_platform_id(self, platform: str) -> int:
-        return await self.db.insert_and_get_id(
-            query="""
+        return await self._get_or_create_id(
+            select_query="""
+                SELECT id FROM platforms WHERE name = %s
+            """,
+            insert_query="""
                 INSERT INTO platforms (name)
                 VALUES (%s)
-                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
             """,
-            params=(platform,),
+            select_params=(platform,),
+            insert_params=(platform,),
         )
 
-
     async def _get_or_create_version_id(self, version: str) -> int:
-        return await self.db.insert_and_get_id(
-            query="""
+        return await self._get_or_create_id(
+            select_query="""
+                SELECT id FROM versions WHERE version = %s
+            """,
+            insert_query="""
                 INSERT INTO versions (version)
                 VALUES (%s)
-                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
             """,
-            params=(version,),
+            select_params=(version,),
+            insert_params=(version,),
         )
 
     async def _get_or_create_locale_id(self, locale: str) -> int:
-        return await self.db.insert_and_get_id(
-            query="""
+        return await self._get_or_create_id(
+            select_query="""
+                SELECT id FROM locales WHERE locale = %s
+            """,
+            insert_query="""
                 INSERT INTO locales (locale)
                 VALUES (%s)
-                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
             """,
-            params=(locale,),
+            select_params=(locale,),
+            insert_params=(locale,),
         )
+
+    # -------------------------
+    # APP INSTALLATION
+    # -------------------------
 
     async def _get_or_create_app_installation_id(self, payload: dict) -> int:
 
-
         platform_id, locale_id = await asyncio.gather(
             self._get_or_create_platform_id(payload["platform"]),
-            self._get_or_create_locale_id(payload["locale"])
+            self._get_or_create_locale_id(payload["locale"]),
         )
 
-        return await self.db.insert_and_get_id(
-            query="""
-                INSERT INTO app_installations (install_uuid, platform_id, locale_id)
-                VALUES (%s, %s, %s)
-                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+        return await self._get_or_create_id(
+            select_query="""
+                SELECT id
+                FROM app_installations
+                WHERE install_uuid = %s
             """,
-            params=(
+            insert_query="""
+                INSERT INTO app_installations (
+                    install_uuid,
+                    platform_id,
+                    locale_id
+                )
+                VALUES (%s, %s, %s)
+            """,
+            select_params=(payload["install_uuid"],),
+            insert_params=(
                 payload["install_uuid"],
                 platform_id,
                 locale_id,
@@ -73,15 +123,8 @@ class HeartbeatHandler:
 
         app_installation_id, version_id = await asyncio.gather(
             self._get_or_create_app_installation_id(payload),
-            self._get_or_create_version_id(payload["version"])
+            self._get_or_create_version_id(payload["version"]),
         )
-
-        print(app_installation_id)
-        print(version_id)
-
-        # safer extraction (avoids KeyError surprises)
-        local_time = payload["local_time"]
-        time_since_last_startup = payload["time_since_last_startup"]
 
         return await self.db.insert_and_get_id(
             query="""
@@ -96,8 +139,8 @@ class HeartbeatHandler:
             params=(
                 app_installation_id,
                 version_id,
-                local_time,
-                time_since_last_startup,
+                payload["local_time"],
+                payload["time_since_last_startup"],
             ),
         )
 
