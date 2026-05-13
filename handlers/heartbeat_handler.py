@@ -58,7 +58,7 @@ class HeartbeatHandler:
         platform = payload.get("platform", "Other")
         platform_id = self.PLATFORM_MAP.get(platform, self.PLATFORM_MAP["Other"])
 
-        locale_id = self._get_locale_id(payload["locale"])
+        locale_id = await self._get_locale_id(payload["locale"])
 
         return await self.db.insert_and_get_id(
             query="""
