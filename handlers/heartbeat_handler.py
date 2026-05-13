@@ -27,7 +27,9 @@ class HeartbeatHandler:
             params=(locale,)
         )
 
-        if record:
+        print(record)
+
+        if record is not None:
             print("Already known locale")
             return record["locale"]
 
