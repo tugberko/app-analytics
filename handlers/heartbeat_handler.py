@@ -27,11 +27,9 @@ class HeartbeatHandler:
             params=(locale,)
         )
 
-        print(record)
-
         if record is not None:
             print("Already known locale")
-            return record["locale"]
+            return record["id"]
 
         return await self._create_locale(locale)
 
