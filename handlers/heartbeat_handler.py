@@ -63,7 +63,7 @@ class HeartbeatHandler:
         return await self.db.insert_and_get_id(
             query="""
                   INSERT INTO app_installations (install_uuid, platform_id, locale_id)
-                  VALUES (%s, %s)
+                  VALUES (%s, %s, %s)
                   """,
             params=(
                 payload["install_uuid"],
