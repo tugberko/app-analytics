@@ -16,7 +16,7 @@ class HeartbeatHandler:
     async def _get_or_create_platform_id(self, platform: str) -> int:
         return await self.db.insert_and_get_id(
             query="""
-                INSERT INTO platforms (platform)
+                INSERT INTO platforms (name)
                 VALUES (%s)
                 ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
             """,

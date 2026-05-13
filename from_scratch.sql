@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS heartbeats;
 CREATE TABLE heartbeats (
     id INT NOT NULL AUTO_INCREMENT,
     app_installation_id INT NOT NULL,
-    version_id UNSIGNED SMALLINT NOT NULL,
+    version_id SMALLINT NOT NULL,
     time_since_last_startup_s INT NOT NULL,
     created_at_local DATETIME NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
