@@ -18,7 +18,7 @@ async def handle_heartbeat(request: Request):
     print("Request received")
     print(await request.json())
 
-    return await HeartbeatHandler().handle(request)
+    return await HeartbeatHandler().handle_heartbeat(request)
 
 
 @app.get("/")
