@@ -10,12 +10,12 @@ INSERT INTO platforms (id, name) VALUES
 
 DROP TABLE  IF EXISTS versions;
 CREATE TABLE versions (
-    id SMALLINT UNSIGNED NOT NULL PRIMARY KEY,
-    version VARCHAR(20) NOT NULL,
+    id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    version VARCHAR(20) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-INSERT INTO versions (id, version) VALUES
-(1, '1.0.0');
+
+
 
 DROP TABLE IF EXISTS app_installations;
 CREATE TABLE app_installations (
@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS heartbeats;
 CREATE TABLE heartbeats (
     id INT NOT NULL AUTO_INCREMENT,
     app_installation_id INT NOT NULL,
-    version_id INT NOT NULL,
+    version_id UNSIGNED SMALLINT NOT NULL,
     time_since_last_startup_s INT NOT NULL,
     created_at_local DATETIME NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
