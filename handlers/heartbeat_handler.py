@@ -4,67 +4,52 @@ from database_connection import MySQLClient
 
 class HeartbeatHandler:
     PLATFORM_MAP = {
-        "iOS": 0,
-        "Android": 1,
-        "Other": 2,
+        "iOS": 1,
+        "Android": 2,
+        "Other": 3,
     }
 
     def __init__(self):
         self.db = MySQLClient()
 
-    async def _get_locale_id(self, locale: str) -> int:
-        """
+    # -------------------------
+    # UPSERT HELPERS (SAFE)
+    # -------------------------
 
-        :param locale:
-        :return:
-        """
-        record = await self.db.fetch_one(
-            query="""
-                  SELECT id
-                  FROM locales L
-                  WHERE L.locale = %s
-                  """,
-            params=(locale,)
-        )
-
-        if record is not None:
-            print("Already known locale")
-            return record["id"]
-
-        return await self._create_locale(locale)
-
-    async def _create_locale(self, locale: str) -> int:
-        print(f"Creating a new locale for {locale}")
-
+    async def _get_or_create_version_id(self, version: str) -> int:
         return await self.db.insert_and_get_id(
             query="""
-                  INSERT INTO locales (locale)
-                  VALUES (%s)
-                  """,
-            params=(
-                locale,
-            )
+                INSERT INTO versions (version)
+                VALUES (%s)
+                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+            """,
+            params=(version,),
         )
 
-    async def _create_app_installation(self, payload: dict) -> int:
-        """
-        This function creates a new record in app_installations table
-        :param payload:
-        :return:
-        """
+    async def _get_or_create_locale_id(self, locale: str) -> int:
+        return await self.db.insert_and_get_id(
+            query="""
+                INSERT INTO locales (locale)
+                VALUES (%s)
+                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+            """,
+            params=(locale,),
+        )
 
-        print(f"Creating app_installation for UUID {payload['install_uuid']}")
-
+    async def _get_or_create_app_installation_id(self, payload: dict) -> int:
         platform = payload.get("platform", "Other")
         platform_id = self.PLATFORM_MAP.get(platform, self.PLATFORM_MAP["Other"])
 
-        locale_id = await self._get_locale_id(payload["locale"])
+        locale = payload["locale"]
+
+        locale_id = await self._get_or_create_locale_id(locale)
 
         return await self.db.insert_and_get_id(
             query="""
-                  INSERT INTO app_installations (install_uuid, platform_id, locale_id)
-                  VALUES (%s, %s, %s)
-                  """,
+                INSERT INTO app_installations (install_uuid, platform_id, locale_id)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+            """,
             params=(
                 payload["install_uuid"],
                 platform_id,
@@ -72,53 +57,46 @@ class HeartbeatHandler:
             ),
         )
 
-    async def _get_app_installation_id(self, payload: dict) -> int:
-        """
-        This function gets the corresponding id from the app_installations table
-        :param payload:
-        :return:
-        """
-        record = await self.db.fetch_one(
-            query="""
-                  SELECT id
-                  FROM app_installations
-                  WHERE install_uuid = %s
-                  """,
-            params=(payload["install_uuid"],),
-        )
-
-        if record:
-            print("Already known install UUID")
-            return record["id"]
-
-        return await self._create_app_installation(payload)
+    # -------------------------
+    # HEARTBEAT INSERT
+    # -------------------------
 
     async def _create_heartbeat(self, payload: dict) -> int:
-        """
-        This function creates a new record in heartbeats table
-        :param payload:
-        :return:
-        """
+        app_installation_id = await self._get_or_create_app_installation_id(payload)
+        version_id = await self._get_or_create_version_id(payload["version"])
 
-        app_installation_id = await self._get_app_installation_id(payload)
+        # safer extraction (avoids KeyError surprises)
+        local_time = payload["local_time"]
+        time_since_last_startup = payload["time_since_last_startup"]
 
         return await self.db.insert_and_get_id(
             query="""
-                  INSERT INTO heartbeats (app_installation_id,
-                                          created_at_local,
-                                          time_since_last_startup_s)
-                  VALUES (%s, %s, %s)
-                  """,
+                INSERT INTO heartbeats (
+                    app_installation_id,
+                    version_id,
+                    created_at_local,
+                    time_since_last_startup_s
+                )
+                VALUES (%s, %s, %s, %s)
+            """,
             params=(
                 app_installation_id,
-                payload["local_time"],
-                payload["time_since_last_startup"],
+                version_id,
+                local_time,
+                time_since_last_startup,
             ),
         )
+
+    # -------------------------
+    # PUBLIC HANDLER
+    # -------------------------
 
     async def handle_heartbeat(self, request: Request):
         payload = await request.json()
 
         heartbeat_id = await self._create_heartbeat(payload)
 
-        return {"ok": True, "heartbeat_id": heartbeat_id}
+        return {
+            "ok": True,
+            "heartbeat_id": heartbeat_id,
+        }

@@ -4,9 +4,9 @@ CREATE TABLE platforms (
     name VARCHAR(10) NOT NULL
 );
 INSERT INTO platforms (id, name) VALUES
-(0, 'iOS'),
-(1, 'Android'),
-(2, 'Other');
+(1, 'iOS'),
+(2, 'Android'),
+(3, 'Other');
 
 DROP TABLE  IF EXISTS versions;
 CREATE TABLE versions (
@@ -15,7 +15,7 @@ CREATE TABLE versions (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 INSERT INTO versions (id, version) VALUES
-(0, '1.0.0');
+(1, '1.0.0');
 
 DROP TABLE IF EXISTS app_installations;
 CREATE TABLE app_installations (
@@ -32,10 +32,11 @@ DROP TABLE IF EXISTS heartbeats;
 CREATE TABLE heartbeats (
     id INT NOT NULL AUTO_INCREMENT,
     app_installation_id INT NOT NULL,
+    version_id INT NOT NULL,
     time_since_last_startup_s INT NOT NULL,
     created_at_local DATETIME NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
+
     PRIMARY KEY (id),
 
     INDEX idx_app_installation_id (app_installation_id)
