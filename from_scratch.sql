@@ -17,8 +17,8 @@ CREATE TABLE versions (
 INSERT INTO versions (id, version) VALUES
 (0, '1.0.0');
 
-DROP TABLE IF EXISTS app_installs;
-CREATE TABLE app_installs (
+DROP TABLE IF EXISTS app_installations;
+CREATE TABLE app_installations (
     id INT NOT NULL AUTO_INCREMENT,
     install_uuid CHAR(36) NOT NULL,
     platform_id TINYINT NOT NULL,
@@ -30,17 +30,12 @@ CREATE TABLE app_installs (
 DROP TABLE IF EXISTS heartbeats;
 CREATE TABLE heartbeats (
     id INT NOT NULL AUTO_INCREMENT,
-    app_install_id INT NOT NULL,
+    app_installation_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at_local DATETIME NOT NULL,
-    
+    time_since_last_startup_s INT NOT NULL,
 
     PRIMARY KEY (id),
 
-    INDEX idx_app_install_id (app_install_id),
-
-    CONSTRAINT fk_heartbeats_app_installs
-        FOREIGN KEY (app_install_id)
-        REFERENCES app_installs (id)
-        ON DELETE CASCADE
+    INDEX idx_app_installation_id (app_installation_id)
 );

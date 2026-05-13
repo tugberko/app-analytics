@@ -93,6 +93,14 @@ class MySQLClient:
                 await cur.executemany(query, params)
                 return cur.rowcount
 
+    async def insert_and_get_id(self, query: str, params=None) -> int:
+        pool = await self._ensure_pool()
+
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(query, params)
+                return cur.lastrowid
+
     async def transaction(self):
         """
         Transactional connection context manager.
