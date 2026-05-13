@@ -18,6 +18,9 @@ class HeartbeatHandler:
         :param payload:
         :return:
         """
+
+        print(f"Creating app_installation for UUID {payload['install_uuid']}")
+
         platform = payload.get("platform", "Other")
         platform_id = self.PLATFORM_MAP.get(platform, self.PLATFORM_MAP["Other"])
 
@@ -48,6 +51,7 @@ class HeartbeatHandler:
         )
 
         if record:
+            print("Already known install UUID")
             return record["id"]
 
         return await self._create_app_installation(payload)
@@ -58,6 +62,8 @@ class HeartbeatHandler:
         :param payload:
         :return:
         """
+
+
         app_installation_id = await self._get_app_installation_id(payload)
 
         return await self.db.insert_and_get_id(

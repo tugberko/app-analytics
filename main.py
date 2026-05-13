@@ -15,6 +15,8 @@ app = FastAPI()
 
 @app.post("/practivo/heartbeat")
 async def handle_heartbeat(request: Request):
+    print("Request received")
+    print(await request.json())
 
     return await HeartbeatHandler().handle(request)
 
