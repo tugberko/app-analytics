@@ -1,12 +1,9 @@
 DROP TABLE IF EXISTS platforms;
 CREATE TABLE platforms (
-    id TINYINT UNSIGNED NOT NULL PRIMARY KEY,
+    id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(10) NOT NULL
 );
-INSERT INTO platforms (id, name) VALUES
-(1, 'iOS'),
-(2, 'Android'),
-(3, 'Other');
+
 
 DROP TABLE  IF EXISTS versions;
 CREATE TABLE versions (
