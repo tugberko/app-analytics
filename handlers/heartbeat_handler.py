@@ -76,6 +76,9 @@ class HeartbeatHandler:
             self._get_or_create_version_id(payload["version"])
         )
 
+        print(app_installation_id)
+        print(version_id)
+
         # safer extraction (avoids KeyError surprises)
         local_time = payload["local_time"]
         time_since_last_startup = payload["time_since_last_startup"]
@@ -86,7 +89,7 @@ class HeartbeatHandler:
                     app_installation_id,
                     version_id,
                     created_at_local,
-                    time_since_last_startup_s,
+                    time_since_last_startup_s
                 )
                 VALUES (%s, %s, %s, %s)
             """,
