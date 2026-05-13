@@ -22,6 +22,7 @@ CREATE TABLE app_installations (
     id INT NOT NULL AUTO_INCREMENT,
     install_uuid CHAR(36) NOT NULL,
     platform_id TINYINT NOT NULL,
+    locale_id TINYINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_install_uuid (install_uuid)
@@ -38,4 +39,13 @@ CREATE TABLE heartbeats (
     PRIMARY KEY (id),
 
     INDEX idx_app_installation_id (app_installation_id)
+);
+
+DROP TABLE IF EXISTS locales;
+CREATE TABLE locales (
+    id INT NOT NULL AUTO_INCREMENT,
+    locale VARCHAR(32) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY unique_locale (locale)
 );

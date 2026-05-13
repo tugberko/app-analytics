@@ -12,6 +12,40 @@ class HeartbeatHandler:
     def __init__(self):
         self.db = MySQLClient()
 
+    async def _get_locale_id(self, locale: str) -> int:
+        """
+
+        :param locale:
+        :return:
+        """
+        record = await self.db.fetch_one(
+            query="""
+                  SELECT id
+                  FROM locales L
+                  WHERE L.locale = %s
+                  """,
+            params=(locale,)
+        )
+
+        if record:
+            print("Already known locale")
+            return record["locale"]
+
+        return await self._create_locale(locale)
+
+    async def _create_locale(self, locale: str) -> int:
+        print(f"Creating a new locale for {locale}")
+
+        return await self.db.insert_and_get_id(
+            query="""
+                  INSERT INTO locales (locale)
+                  VALUES (%s)
+                  """,
+            params=(
+                locale,
+            )
+        )
+
     async def _create_app_installation(self, payload: dict) -> int:
         """
         This function creates a new record in app_installations table
@@ -24,14 +58,17 @@ class HeartbeatHandler:
         platform = payload.get("platform", "Other")
         platform_id = self.PLATFORM_MAP.get(platform, self.PLATFORM_MAP["Other"])
 
+        locale_id = self._get_locale_id(payload["locale"])
+
         return await self.db.insert_and_get_id(
             query="""
-                INSERT INTO app_installations (install_uuid, platform_id)
-                VALUES (%s, %s)
-            """,
+                  INSERT INTO app_installations (install_uuid, platform_id, locale_id)
+                  VALUES (%s, %s)
+                  """,
             params=(
                 payload["install_uuid"],
                 platform_id,
+                locale_id,
             ),
         )
 
@@ -43,10 +80,10 @@ class HeartbeatHandler:
         """
         record = await self.db.fetch_one(
             query="""
-                SELECT id
-                FROM app_installations
-                WHERE install_uuid = %s
-            """,
+                  SELECT id
+                  FROM app_installations
+                  WHERE install_uuid = %s
+                  """,
             params=(payload["install_uuid"],),
         )
 
@@ -63,18 +100,15 @@ class HeartbeatHandler:
         :return:
         """
 
-
         app_installation_id = await self._get_app_installation_id(payload)
 
         return await self.db.insert_and_get_id(
             query="""
-                INSERT INTO heartbeats (
-                    app_installation_id,
-                    created_at_local,
-                    time_since_last_startup_s
-                )
-                VALUES (%s, %s, %s)
-            """,
+                  INSERT INTO heartbeats (app_installation_id,
+                                          created_at_local,
+                                          time_since_last_startup_s)
+                  VALUES (%s, %s, %s)
+                  """,
             params=(
                 app_installation_id,
                 payload["local_time"],
