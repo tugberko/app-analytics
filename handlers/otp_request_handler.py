@@ -111,7 +111,8 @@ class OTPRequestHandler:
 
         try:
             self.email = payload["email"].strip().lower()
-        except KeyError as e:
+        except (KeyError, AttributeError:) as e:
+            print(e)
             return self.FAILURE_RESPONSE
 
         is_email_valid = await EmailValidator().check_if_valid_email(self.email)
@@ -121,7 +122,8 @@ class OTPRequestHandler:
         try:
             await self.insert_otp()
             await self.send_email()
-        except Exception:
+        except Exception as e:
+            print(e)
             return self.FAILURE_RESPONSE
 
         return self.SUCCESS_RESPONSE
