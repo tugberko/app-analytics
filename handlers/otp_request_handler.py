@@ -111,7 +111,7 @@ class OTPRequestHandler:
 
         try:
             self.email = payload["email"].strip().lower()
-        except (KeyError, AttributeError:) as e:
+        except (KeyError, AttributeError) as e:
             print(e)
             return self.FAILURE_RESPONSE
 
