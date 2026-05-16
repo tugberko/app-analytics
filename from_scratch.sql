@@ -67,3 +67,6 @@ CREATE TABLE locales (
     PRIMARY KEY (id),
     UNIQUE KEY unique_locale (locale)
 );
+
+
+GRANT DELETE ON app_analytics_db.email_otps TO 'fastapi_app'@'localhost';

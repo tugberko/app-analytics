@@ -59,7 +59,7 @@ class OTPRequestHandler:
                 )
                 VALUES (
                     %s,
-                    %s,
+                    %s
                 );
             """,
             params=(self.email, self.hashed_otp)
