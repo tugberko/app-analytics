@@ -35,6 +35,8 @@ class OTPRequestHandler:
     def generate_otp(self):
         self.otp = str(secrets.randbelow(900000) + 100000)
 
+        print(f"Generated OTP: {self.otp}")
+
         self.hashed_otp = hashlib.sha256(self.otp.encode()).hexdigest()
 
     async def insert_otp(self):
@@ -65,7 +67,7 @@ class OTPRequestHandler:
             params=(self.email, self.hashed_otp)
         )
 
-        print(result)
+
 
     async def send_email(self):
 
@@ -105,6 +107,9 @@ class OTPRequestHandler:
                 if status >= 400:
                     raise Exception(f"Mailjet error {status}: {data}")
 
+
+    def check_if_valid_payload(self, payload: dict):
+        pass
 
     async def handle(self, request: Request) -> JSONResponse:
         payload = await request.json()

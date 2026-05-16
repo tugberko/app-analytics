@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from handlers.heartbeat_handler import HeartbeatHandler
 
 from handlers.otp_request_handler import OTPRequestHandler
+from handlers.otp_verification_handler import OTPVerificationHandler
 
 dotenv.load_dotenv(
     ".env",
@@ -35,6 +36,12 @@ async def get_config(request: Request):
 @app.post("/practivo/request-otp")
 async def request_otp(request: Request):
     response = await OTPRequestHandler().handle(request)
+
+    return response
+
+@app.post("/practivo/verify-otp")
+async def verify_otp(request: Request):
+    response = await OTPVerificationHandler().handle(request)
 
     return response
 

@@ -12,10 +12,19 @@ CREATE TABLE email_otps (
 
     max_attempts INT NOT NULL DEFAULT 5,
 
+    is_used BOOL NOT NULL DEFAULT FALSE,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     INDEX idx_email (email),
     INDEX idx_expires_at (expires_at)
+);
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS platforms;
