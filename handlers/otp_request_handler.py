@@ -12,9 +12,18 @@ from utils.email_validator import EmailValidator
 
 
 class OTPRequestHandler:
+
+    SUCCESS_RESPONSE = JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"success": True}
+        )
+
+    FAILURE_RESPONSE = JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"success": False}
+        )
+
     EMAIL_SERVICE_URL = "https://api.mailjet.com/v3.1/send"
-
-
 
     def __init__(self):
         self.db = MySQLClient()
@@ -100,25 +109,19 @@ class OTPRequestHandler:
     async def handle(self, request: Request) -> JSONResponse:
         payload = await request.json()
 
-        self.email = payload["email"].strip().lower()
+        try:
+            self.email = payload["email"].strip().lower()
+        except KeyError as e:
+            return self.FAILURE_RESPONSE
 
         is_email_valid = await EmailValidator().check_if_valid_email(self.email)
         if not is_email_valid:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"success": False}
-            )
+            return self.FAILURE_RESPONSE
 
         try:
             await self.insert_otp()
             await self.send_email()
         except Exception:
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={"success": True}
-            )
+            return self.FAILURE_RESPONSE
 
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content={"success": True}
-        )
+        return self.SUCCESS_RESPONSE
