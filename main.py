@@ -1,12 +1,11 @@
-import os
-
 import dotenv
 from fastapi import FastAPI, Request
-from starlette.middleware.errors import JS
+
 from starlette.responses import JSONResponse
 
-from database_connection import MySQLClient
 from handlers.heartbeat_handler import HeartbeatHandler
+
+from handlers.otp_request_handler import OTPRequestHandler
 
 dotenv.load_dotenv(
     ".env",
@@ -15,6 +14,7 @@ dotenv.load_dotenv(
 
 app = FastAPI()
 
+
 @app.post("/practivo/heartbeat")
 async def handle_heartbeat(request: Request):
     print("Request received")
@@ -22,17 +22,23 @@ async def handle_heartbeat(request: Request):
 
     return await HeartbeatHandler().handle_heartbeat(request)
 
+
 @app.get("/practivo/config")
 async def get_config(request: Request):
-
     config = {
-        "key" : "value"
+        "key": "value"
     }
 
     return JSONResponse(status_code=200, content=config)
 
+
+@app.post("/practivo/request-otp")
+async def request_otp(request: Request):
+    response = await OTPRequestHandler().handle(request)
+
+    return response
+
+
 @app.get("/")
 async def root():
     return "Hello"
-
-

@@ -2,7 +2,7 @@ import asyncio
 from fastapi import Request
 from pymysql.err import IntegrityError  # adjust if needed
 
-from database_connection import MySQLClient
+from utils.database_connection import MySQLClient
 
 
 class HeartbeatHandler:

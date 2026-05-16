@@ -1,3 +1,23 @@
+DROP TABLE IF EXISTS email_otps;
+CREATE TABLE email_otps (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+
+    email VARCHAR(255) NOT NULL,
+
+    otp_hash VARCHAR(255) NOT NULL,
+
+    expires_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL 5 MINUTE),
+
+    attempts INT NOT NULL DEFAULT 0,
+
+    max_attempts INT NOT NULL DEFAULT 5,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_email (email),
+    INDEX idx_expires_at (expires_at)
+);
+
 DROP TABLE IF EXISTS platforms;
 CREATE TABLE platforms (
     id TINYINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
