@@ -42,7 +42,7 @@ class OTPRequestHandler:
         )
 
         # Create new OTP
-        await self.db.insert_and_get_id(
+        result = await self.db.insert_and_get_id(
             query= """
                 INSERT INTO email_otps (
                     email,
@@ -55,6 +55,8 @@ class OTPRequestHandler:
             """,
             params=(self.email, self.hashed_otp)
         )
+
+        print(result)
 
     async def send_email(self):
 
