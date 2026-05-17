@@ -24,7 +24,7 @@ class OTPVerificationHandler:
 
         self.user_id: Optional[int] = None
         self.raw_token: Optional[str] = None
-        self.hashed_refresh_token: Optional[str] = None
+        self.hashed_token: Optional[str] = None
 
     async def mark_as_used(self, email_otp_id: int):
         result = await self.db.execute(
@@ -92,11 +92,11 @@ class OTPVerificationHandler:
     async def grant_token(self):
 
         self.raw_token = secrets.token_hex(32)
-        self.hashed_refresh_token = hashlib.sha256(self.raw_token.encode()).hexdigest()
+        self.hashed_token = hashlib.sha256(self.raw_token.encode()).hexdigest()
 
         await self.db.insert_and_get_id(
             query="""
-                INSERT INTO refresh_tokens (
+                INSERT INTO tokens (
                     user_id,
                     token_hash,
                     expires_at
@@ -107,7 +107,7 @@ class OTPVerificationHandler:
                     DATE_ADD(NOW(), INTERVAL 30 DAY)
                 );
             """,
-            params=(self.user_id, self.hashed_refresh_token)
+            params=(self.user_id, self.hashed_token)
         )
 
 

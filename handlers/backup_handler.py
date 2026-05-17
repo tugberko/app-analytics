@@ -1,4 +1,5 @@
 import hashlib
+import json
 from typing import Optional
 
 from fastapi import Request
@@ -26,7 +27,7 @@ class BackupHandler:
     async def find_user(self):
 
         record = await self.db.fetch_one(
-            query="SELECT * FROM refresh_tokens WHERE token_hash=%s AND CURDATE() < expires_at",
+            query="SELECT * FROM tokens WHERE token_hash=%s AND CURDATE() < expires_at",
             params=(self.hashed_token,)
         )
 
@@ -38,8 +39,12 @@ class BackupHandler:
 
     async def backup(self):
 
-        print(len(self.user_data))
-        print(self.user_data)
+        record = await self.db.insert_and_get_id(
+            query="INSERT INTO backups (user_id, data) VALUES (%s, %s)",
+            params=(self.user_id, json.dumps(self.user_data))
+        )
+
+        print(record)
 
     async def handle(self, request: Request) -> JSONResponse:
 

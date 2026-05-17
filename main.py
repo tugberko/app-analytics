@@ -53,6 +53,10 @@ async def verify_otp(request: Request):
 
     return response
 
+@app.post("/practivo/me")
+async def me(request: Request):
+
+
 
 @app.get("/")
 async def root():

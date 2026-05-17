@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS refresh_tokens;
-CREATE TABLE refresh_tokens (
+DROP TABLE IF EXISTS tokens;
+CREATE TABLE tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     token_hash CHAR(64) NOT NULL UNIQUE,
