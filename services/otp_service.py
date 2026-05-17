@@ -41,7 +41,7 @@ class OTPService:
         otp_hash = digest(otp)
 
         record = await self.db.fetch_one(
-            query="SELECT * FROM email_otps WHERE email = %s AND otp_hash = %s AND is_used = 0 AND CURDATE() < expires_at",
+            query="SELECT * FROM email_otps WHERE email = %s AND otp_hash = %s AND is_used = 0 AND NOW() < expires_at",
             params=(email, otp_hash)
         )
 
@@ -52,16 +52,16 @@ class OTPService:
         return None
 
 
-    async def check_if_otp_requested_recently(self, email: str) -> bool:
+    async def check_if_otp_requested_too_frequently_recently(self, email: str) -> bool:
 
         COOLDOWN = 5 # minutes
 
-        record = await self.db.fetch_all(
-            query="SELECT * FROM email_otps WHERE email = %s AND created_at > CURDATE() - INTERVAL %s MINUTE",
+        result = await self.db.fetch_one(
+            query="SELECT COUNT(*) AS count FROM email_otps WHERE email = %s AND created_at > NOW() - INTERVAL %s MINUTE",
             params=(email, COOLDOWN)
         )
 
-        if len(record) > 3:
+        if result["count"] > 3:
             return True
 
         return False

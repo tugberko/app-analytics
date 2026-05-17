@@ -41,7 +41,7 @@ class OTPRequestHandler:
             print("Invalid email")
             return self.RESPONSE
 
-        if await otp_service.check_if_otp_requested_recently(payload["email"]):
+        if await otp_service.check_if_otp_requested_too_frequently_recently(payload["email"]):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"error": "Yavaş biraz"})
 
         otp = otp_service.generate_otp()
