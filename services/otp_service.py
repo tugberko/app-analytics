@@ -52,6 +52,20 @@ class OTPService:
         return None
 
 
+    async def check_if_otp_requested_recently(self, email: str) -> bool:
+
+        COOLDOWN = 5 # minutes
+
+        record = await self.db.fetch_all(
+            query="SELECT * FROM email_otps WHERE email = %s AND created_at > CURDATE() - INTERVAL %s MINUTE",
+            params=(email, COOLDOWN)
+        )
+
+        if len(record) > 3:
+            return True
+
+        return False
+
     async def display_otp(self, otp: str):
         """
         This method is used to display OTP (preferably via email)
