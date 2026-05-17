@@ -63,6 +63,10 @@ async def restore(request: Request):
 
 @app.post("/practivo/me")
 async def me(request: Request):
+
+    print(request.headers)
+    print(request.client.host)
+
     response = await MeHandler().handle(request)
 
     return response
