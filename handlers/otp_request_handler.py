@@ -34,14 +34,14 @@ class OTPRequestHandler:
             print("Invalid payload")
             return self.RESPONSE
 
-        email = payload["email"]
+        email = payload["email"].lower().strip()
 
         is_email_valid = await EmailValidator().check_if_valid_email(email)
         if not is_email_valid:
             print("Invalid email")
             return self.RESPONSE
 
-        if await otp_service.check_if_otp_requested_too_frequently_recently(payload["email"]):
+        if await otp_service.check_if_otp_requested_too_frequently_recently(email):
             return JSONResponse(status_code=status.HTTP_200_OK, content={"error": "Yavaş biraz"})
 
         otp = otp_service.generate_otp()

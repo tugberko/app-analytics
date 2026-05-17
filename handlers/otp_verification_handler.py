@@ -44,6 +44,8 @@ class OTPVerificationHandler:
     async def handle(self, request: Request) -> JSONResponse:
         payload = await request.json()
 
+        email = payload["email"].lower().strip()
+
         is_valid_payload = self.check_if_valid_payload(payload)
         if not is_valid_payload:
             return self.FAILURE_RESPONSE
@@ -53,7 +55,7 @@ class OTPVerificationHandler:
         token_service = TokenService()
 
         is_good = await otp_service.check_if_otp_good(
-            email=payload["email"],
+            email=email,
             otp=payload["otp"]
         )
         if not is_good:
@@ -61,9 +63,9 @@ class OTPVerificationHandler:
 
 
 
-        user_id = await user_service.find_user_id_by_email(payload["email"])
+        user_id = await user_service.find_user_id_by_email(email)
         if user_id is None:
-            user_id = await user_service.create_user(email=payload["email"])
+            user_id = await user_service.create_user(email=email)
 
         token = await token_service.grant_token(user_id=user_id)
 
