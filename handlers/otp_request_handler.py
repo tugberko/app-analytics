@@ -124,11 +124,7 @@ class OTPRequestHandler:
         if not is_email_valid:
             return self.FAILURE_RESPONSE
 
-        try:
-            await self.insert_otp()
-            await self.send_email()
-        except Exception as e:
-            print(e)
-            return self.FAILURE_RESPONSE
+        await self.insert_otp()
+        await self.send_email()
 
         return self.SUCCESS_RESPONSE
