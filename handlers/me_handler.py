@@ -39,6 +39,8 @@ class MeHandler:
             params=(self.user_id,)
         )
 
+        print(record)
+
         self.most_recent_backup = record["created_at"]
 
 
