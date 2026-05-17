@@ -1,4 +1,6 @@
 import hashlib
+import secrets
+from typing import Optional
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -19,6 +21,10 @@ class OTPVerificationHandler:
         self.email: str = ""
         self.otp: str = ""
         self.hashed_otp: str = ""
+
+        self.user_id: Optional[int] = None
+        self.raw_token: Optional[str] = None
+        self.hashed_refresh_token: Optional[str] = None
 
     async def mark_as_used(self, email_otp_id: int):
         result = await self.db.execute(
@@ -52,13 +58,13 @@ class OTPVerificationHandler:
 
         return False
 
-    async def upsert_user(self) -> int:
+    async def upsert_user(self):
         """
         This function upserts the users and returns the user id
         :return:
         """
 
-        # If present
+        # Check if user already exists
         record = await self.db.fetch_one(
             query="""
                   SELECT *
@@ -69,10 +75,11 @@ class OTPVerificationHandler:
         )
 
         if record is not None:
-            return record["id"]
+            self.user_id = record["user_id"]
+            return
 
         # New user
-        new_user_id = await self.db.insert_and_get_id(
+        self.user_id = await self.db.insert_and_get_id(
             query="""
                   INSERT INTO users (email)
                   VALUES (%s);
@@ -80,7 +87,29 @@ class OTPVerificationHandler:
             params=(self.email,)
         )
 
-        return new_user_id
+
+
+    async def grant_token(self):
+
+        self.raw_token = secrets.token_hex(32)
+        self.hashed_refresh_token = hashlib.sha256(self.raw_token.encode()).hexdigest()
+
+        await self.db.insert_and_get_id(
+            query="""
+                INSERT INTO refresh_tokens (
+                    user_id,
+                    token_hash,
+                    expires_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    DATE_ADD(NOW(), INTERVAL 30 DAY)
+                );
+            """,
+            params=(self.user_id, self.hashed_refresh_token)
+        )
+
 
     def check_if_valid_payload(self, payload: dict) -> bool:
         if "email" not in payload.keys() or "otp" not in payload.keys():
@@ -116,9 +145,10 @@ class OTPVerificationHandler:
         if not is_good:
             return self.FAILURE_RESPONSE
 
-        user_id = await self.upsert_user()
+        await self.upsert_user()
+        await self.grant_token()
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content={"success": True, "user_id": user_id}
+            content={"success": True, "token": self.raw_token}
         )

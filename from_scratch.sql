@@ -1,3 +1,19 @@
+DROP TABLE IF EXISTS refresh_tokens;
+CREATE TABLE refresh_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    revoked_at DATETIME NULL,
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_token_hash (token_hash)
+);
+
+
+
+
 DROP TABLE IF EXISTS email_otps;
 CREATE TABLE email_otps (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
