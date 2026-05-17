@@ -22,8 +22,6 @@ class BackupHandler:
 
         self.db = MySQLClient()
 
-
-
     async def handle(self, request: Request) -> JSONResponse:
 
         payload = await request.json()
@@ -34,7 +32,6 @@ class BackupHandler:
         backup_restore_service = BackupRestoreService()
 
         user_id = await token_service.find_user(raw_token=raw_token)
-
         if user_id is None:
             return BackupHandler.FAILURE_RESPONSE
 

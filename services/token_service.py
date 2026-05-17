@@ -33,7 +33,7 @@ class TokenService:
         hashed_token = digest(raw_token)
 
         record = await self.db.fetch_one(
-            query="SELECT * FROM tokens WHERE token_hash = %s LIMIT 1",
+            query="SELECT * FROM tokens WHERE token_hash = %s AND CURDATE() < expires_at AND revoked_at IS NULL LIMIT 1",
             params=(hashed_token,)
         )
 

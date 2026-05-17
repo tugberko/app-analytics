@@ -6,7 +6,10 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette import status
 
+from services.backup_restore_service import BackupRestoreService
+from services.token_service import TokenService
 from utils.database_connection import MySQLClient
+from utils.hash import digest
 
 
 class RestoreHandler:
@@ -17,61 +20,22 @@ class RestoreHandler:
 
     def __init__(self):
 
-        self.hashed_token = None
-        self.raw_token = None
-
-        self.user_id: Optional[int] = None
-
-        self.most_recent_data: Optional[dict] = None
-        self.most_recent_restore_date: str = None
-
         self.db = MySQLClient()
-
-    async def find_user(self):
-
-        record = await self.db.fetch_one(
-            query="SELECT * FROM tokens WHERE token_hash=%s AND CURDATE() < expires_at",
-            params=(self.hashed_token,)
-        )
-
-        if record is None:
-            print("No users found with this token")
-            return
-
-        self.user_id = record["user_id"]
-
-    async def restore(self):
-
-        record = await self.db.fetch_one(
-            query = "SELECT * FROM backups B WHERE B.user_id = %s ORDER BY B.created_at DESC LIMIT 1",
-            params=(self.user_id,)
-        )
-
-        if record is not None:
-            self.most_recent_data = json.loads(record["data"])
-            self.most_recent_restore_date = str(record["created_at"])
-
 
     async def handle(self, request: Request) -> JSONResponse:
 
         payload = await request.json()
-        
-        self.raw_token = payload["token"]
-        self.hashed_token = hashlib.sha256(self.raw_token.encode()).hexdigest()
 
+        raw_token = payload["token"]
 
-        await self.find_user()
+        token_service = TokenService()
+        backup_restore_service = BackupRestoreService()
 
-        if self.user_id is not None:
-            await self.restore()
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={
-                    "most_recent_restore_date": self.most_recent_restore_date,
-                    "most_recent_data": self.most_recent_data,
-                    "success": True
-                }
-            )
+        user_id = await token_service.find_user(raw_token=raw_token)
+        if user_id is None:
+            return RestoreHandler.FAILURE_RESPONSE
 
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"success": False})
+        most_recent_data = await backup_restore_service.restore(user_id=user_id)
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"success": True, **most_recent_data})
 
