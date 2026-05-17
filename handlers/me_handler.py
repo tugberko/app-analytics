@@ -50,9 +50,8 @@ class MeHandler:
             params=(self.user_id,)
         )
 
-        print(record)
-
-        self.most_recent_backup = record["created_at"]
+        if record is not None:
+            self.most_recent_backup = record["created_at"]
 
     async def handle(self, request: Request) -> JSONResponse:
         payload = await request.json()
@@ -69,6 +68,6 @@ class MeHandler:
             content={
                 "user_id": self.user_id,
                 "email": self.user_email,
-                "most_recent_backup": self.most_recent_backup,
+                "most_recent_backup": str(self.most_recent_backup),
             }
         )
