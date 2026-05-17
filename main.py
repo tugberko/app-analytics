@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 
 from starlette.responses import JSONResponse
 
+from handlers.backup_handler import BackupHandler
 from handlers.heartbeat_handler import HeartbeatHandler
 
 from handlers.otp_request_handler import OTPRequestHandler
@@ -42,6 +43,13 @@ async def request_otp(request: Request):
 @app.post("/practivo/verify-otp")
 async def verify_otp(request: Request):
     response = await OTPVerificationHandler().handle(request)
+
+    return response
+
+
+@app.post("/practivo/backup")
+async def verify_otp(request: Request):
+    response = await BackupHandler().handle(request)
 
     return response
 
