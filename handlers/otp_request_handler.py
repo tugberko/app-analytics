@@ -125,6 +125,11 @@ class OTPRequestHandler:
             return self.FAILURE_RESPONSE
 
         await self.insert_otp()
-        await self.send_email()
+
+        try:
+            await self.send_email()
+        except Exception as e:
+            print(e)
+
 
         return self.SUCCESS_RESPONSE
