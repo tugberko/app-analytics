@@ -15,9 +15,14 @@ class UserService:
         :return:
         """
 
-        pass
+        user_id = await self.db.insert_and_get_id(
+            query="INSERT INTO users (email) VALUES (%s)",
+            params=(email,)
+        )
 
-    async def find_user_by_email(self, email: str) -> Optional[int]:
+        return user_id
+
+    async def find_user_id_by_email(self, email: str) -> Optional[int]:
         """
 
         :param email:

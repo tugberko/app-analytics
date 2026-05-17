@@ -59,7 +59,11 @@ class OTPVerificationHandler:
         if not is_good:
             return self.FAILURE_RESPONSE
 
-        user_id = await user_service.create_user(email=payload["email"])
+
+        user_id = await user_service.find_user_id_by_email(payload["email"])
+        if user_id is None:
+            user_id = await user_service.create_user(email=payload["email"])
+
         token = await token_service.grant_token(user_id=user_id)
 
         return JSONResponse(
