@@ -12,6 +12,7 @@ class OTPService:
 
     @staticmethod
     def generate_otp() -> str:
+        print("OTP being generated")
         return str(secrets.randbelow(900000) + 100000)
 
     async def insert_otp_email_pair_into_db(self, email: str, otp: str):

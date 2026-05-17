@@ -20,6 +20,8 @@ class OTPRequestHandler:
         ]):
             return False
 
+        return True
+
 
     async def handle(self, request: Request) -> JSONResponse:
 
@@ -29,12 +31,14 @@ class OTPRequestHandler:
 
         is_payload_valid = self.check_if_payload_valid(payload)
         if not is_payload_valid:
+            print("Invalid payload")
             return self.RESPONSE
 
         email = payload["email"]
 
         is_email_valid = await EmailValidator().check_if_valid_email(email)
         if not is_email_valid:
+            print("Invalid email")
             return self.RESPONSE
 
         otp = otp_service.generate_otp()
