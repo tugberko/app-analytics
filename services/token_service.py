@@ -32,7 +32,7 @@ class TokenService:
     async def find_user(self, raw_token: str) -> Optional[int]:
         hashed_token = digest(raw_token)
 
-        record = self.db.fetch_one(
+        record = await self.db.fetch_one(
             query="SELECT * FROM tokens WHERE token_hash = %s LIMIT 1",
             params=(hashed_token,)
         )
