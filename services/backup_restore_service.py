@@ -10,7 +10,7 @@ class BackupRestoreService:
         self.db = MySQLClient()
 
 
-    async def backup(self, data: dict, user_id: int):
+    async def backup(self, user_id: int, data: dict):
 
         await self.db.insert_and_get_id(
             query="INSERT INTO backups (user_id, data) VALUES (%s, %s)",

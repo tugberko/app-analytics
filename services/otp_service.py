@@ -31,6 +31,7 @@ class OTPService:
         )
 
     async def mark_as_used(self, email_otp_id: str):
+
         await self.db.execute(
             query="UPDATE email_otps SET is_used = 1 WHERE id = %s",
             params=(email_otp_id,)
@@ -45,6 +46,7 @@ class OTPService:
         )
 
         if record is not None:
+            await self.mark_as_used(record["id"])
             return record["id"]
 
         return None
