@@ -49,7 +49,13 @@ async def verify_otp(request: Request):
 
 
 @app.post("/practivo/backup")
-async def verify_otp(request: Request):
+async def backup(request: Request):
+    response = await BackupHandler().handle(request)
+
+    return response
+
+@app.post("/practivo/restore")
+async def restore(request: Request):
     response = await BackupHandler().handle(request)
 
     return response
