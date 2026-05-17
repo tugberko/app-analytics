@@ -8,7 +8,7 @@ from utils.hash import digest
 class OTPService:
 
     def __init__(self):
-        self.db = MySQLClient
+        self.db = MySQLClient()
 
     @staticmethod
     def generate_otp() -> str:
