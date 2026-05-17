@@ -41,7 +41,7 @@ class OTPService:
         otp_hash = digest(otp)
 
         record = await self.db.fetch_one(
-            query="SELECT * FROM email_otps WHERE email = %s AND otp_hash = %s",
+            query="SELECT * FROM email_otps WHERE email = %s AND otp_hash = %s AND is_used = 0 AND CURDATE() < expires_at",
             params=(email, otp_hash)
         )
 
