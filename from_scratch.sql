@@ -36,6 +36,15 @@ CREATE TABLE email_otps (
     INDEX idx_expires_at (expires_at)
 );
 
+DROP TABLE IF EXISTS backups;
+CREATE TABLE backups (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    data JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id)
+);
+
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
