@@ -75,7 +75,7 @@ class OTPVerificationHandler:
         )
 
         if record is not None:
-            self.user_id = record["user_id"]
+            self.user_id = record["id"]
             return
 
         # New user
