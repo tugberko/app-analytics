@@ -25,10 +25,26 @@ class BackupRestoreService:
         )
 
         if record is None:
-            return None
+            # No backups found
+            return {
+                "last_backup_date" : None,
+                "data": None
+            }
 
         return {
             "last_backup_date": str(record["created_at"]),
             "data": json.loads(record["data"])
         }
+
+    async def get_most_recent_backup_date(self, user_id: int) -> Optional[str]:
+
+        record = await self.db.fetch_one(
+            query="SELECT MAX(created_at) AS most_recent_backup_date FROM backups WHERE user_id = %s",
+            params=(user_id,)
+        )
+
+        if record is not None:
+            return str(record["most_recent_backup_date"])
+
+        return None
 

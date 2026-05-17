@@ -38,3 +38,14 @@ class UserService:
             return record["id"]
 
         return None
+
+    async def find_email_by_user_id(self, user_id: int) -> Optional[str]:
+        record = await self.db.fetch_one(
+            query="SELECT * FROM users WHERE id = %s LIMIT 1",
+            params=(user_id,)
+        )
+
+        if record is not None:
+            return record["email"]
+
+        return None
