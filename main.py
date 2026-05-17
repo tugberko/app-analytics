@@ -1,5 +1,8 @@
 import dotenv
 from fastapi import FastAPI, Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from starlette.responses import JSONResponse
 
@@ -16,7 +19,30 @@ dotenv.load_dotenv(
     override=True,
 )
 
+def get_client_ip(request: Request):
+
+    forwarded = request.headers.get("x-real-ip")
+
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    return request.client.host
+
 app = FastAPI()
+
+limiter = Limiter(key_func=get_client_ip)
+
+app.state.limiter = limiter
+
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
+
+app.add_middleware(SlowAPIMiddleware)
+
+
+
 
 
 @app.post("/practivo/heartbeat")
@@ -37,6 +63,7 @@ async def get_config(request: Request):
 
 
 @app.post("/practivo/request-otp")
+@limiter.limit("5/15minutes")
 async def request_otp(request: Request):
     response = await OTPRequestHandler().handle(request)
 
