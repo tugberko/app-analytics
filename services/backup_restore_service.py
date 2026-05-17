@@ -43,6 +43,8 @@ class BackupRestoreService:
             params=(user_id,)
         )
 
+        print(record)
+
         if record is not None:
             return str(record["most_recent_backup_date"])
 
