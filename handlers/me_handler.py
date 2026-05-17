@@ -49,3 +49,7 @@ class MeHandler:
         self.raw_token = payload["token"]
         self.hashed_token = hashlib.sha256(self.raw_token.encode()).hexdigest()
 
+        await self.get_most_recent_backup()
+
+        return JSONResponse(status_code=200, content={"most_recent_backup": self.most_recent_backup})
+

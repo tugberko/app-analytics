@@ -5,6 +5,7 @@ from starlette.responses import JSONResponse
 
 from handlers.backup_handler import BackupHandler
 from handlers.heartbeat_handler import HeartbeatHandler
+from handlers.me_handler import MeHandler
 
 from handlers.otp_request_handler import OTPRequestHandler
 from handlers.otp_verification_handler import OTPVerificationHandler
@@ -55,7 +56,9 @@ async def verify_otp(request: Request):
 
 @app.post("/practivo/me")
 async def me(request: Request):
+    response = await MeHandler().handle(request)
 
+    return response
 
 
 @app.get("/")
