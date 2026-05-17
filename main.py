@@ -9,6 +9,7 @@ from handlers.me_handler import MeHandler
 
 from handlers.otp_request_handler import OTPRequestHandler
 from handlers.otp_verification_handler import OTPVerificationHandler
+from handlers.restore_handler import RestoreHandler
 
 dotenv.load_dotenv(
     ".env",
@@ -56,7 +57,7 @@ async def backup(request: Request):
 
 @app.post("/practivo/restore")
 async def restore(request: Request):
-    response = await BackupHandler().handle(request)
+    response = await RestoreHandler().handle(request)
 
     return response
 

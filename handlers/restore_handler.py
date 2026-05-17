@@ -21,7 +21,9 @@ class RestoreHandler:
         self.raw_token = None
 
         self.user_id: Optional[int] = None
+
         self.most_recent_data: Optional[dict] = None
+        self.most_recent_restore_date: str = None
 
         self.db = MySQLClient()
 
@@ -47,6 +49,7 @@ class RestoreHandler:
 
         if record is not None:
             self.most_recent_data = json.loads(record["data"])
+            self.most_recent_restore_date = str(record["created_at"])
 
 
     async def handle(self, request: Request) -> JSONResponse:
@@ -64,6 +67,7 @@ class RestoreHandler:
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
                 content={
+                    "most_recent_restore_date": self.most_recent_restore_date,
                     "most_recent_data": self.most_recent_data,
                     "success": True
                 }
