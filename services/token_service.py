@@ -29,7 +29,7 @@ class TokenService:
 
         return raw_token
 
-    async def find_user(self, raw_token: str) -> Optional[int]:
+    async def get_user_id_from_token(self, raw_token: str) -> Optional[int]:
         hashed_token = digest(raw_token)
 
         record = await self.db.fetch_one(

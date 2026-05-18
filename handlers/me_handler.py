@@ -16,7 +16,7 @@ class MeHandler:
         payload = await request.json()
 
         token_service = TokenService()
-        user_id = await token_service.find_user(payload["token"])
+        user_id = await token_service.get_user_id_from_token(payload["token"])
 
         if user_id is None:
             return JSONResponse(status_code=400,

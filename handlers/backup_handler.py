@@ -31,7 +31,7 @@ class BackupHandler:
         token_service = TokenService()
         backup_restore_service = BackupRestoreService()
 
-        user_id = await token_service.find_user(raw_token=raw_token)
+        user_id = await token_service.get_user_id_from_token(raw_token=raw_token)
         if user_id is None:
             return BackupHandler.FAILURE_RESPONSE
 

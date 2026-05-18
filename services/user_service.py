@@ -22,7 +22,7 @@ class UserService:
 
         return user_id
 
-    async def find_user_id_by_email(self, email: str) -> Optional[int]:
+    async def get_user_id_from_token_id_by_email(self, email: str) -> Optional[int]:
         """
 
         :param email:

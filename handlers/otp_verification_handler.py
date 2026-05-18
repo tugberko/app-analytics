@@ -63,7 +63,7 @@ class OTPVerificationHandler:
 
 
 
-        user_id = await user_service.find_user_id_by_email(email)
+        user_id = await user_service.get_user_id_from_token_id_by_email(email)
         if user_id is None:
             user_id = await user_service.create_user(email=email)
 

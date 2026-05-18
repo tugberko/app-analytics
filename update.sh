@@ -14,5 +14,6 @@ sudo docker build -t "$APP_NAME" .
 sudo docker run -d \
   --name "$APP_NAME" \
   --restart unless-stopped \
+  --add-host=host.docker.internal:host-gateway \
   -p 5000:5000 \
   "$APP_NAME"
