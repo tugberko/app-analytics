@@ -62,6 +62,7 @@ class OTPService:
         )
 
         if result["count"] > 3:
+            print(f"OTP requested too frequently for {email}")
             return True
 
         return False

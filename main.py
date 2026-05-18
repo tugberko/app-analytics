@@ -53,6 +53,9 @@ app.add_middleware(SlowAPIMiddleware)
 # Silent rate limit handler
 # -------------------------
 async def silent_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+
+    print("Dropping due to rate limit, however will return 200 OK.")
+
     return JSONResponse(
         status_code=200,
         content={"success": True}
@@ -85,6 +88,7 @@ async def request_otp(request: Request):
 
 
 @app.post("/practivo/verify-otp")
+@limiter.limit("4/1minutes")
 async def verify_otp(request: Request):
     return await OTPVerificationHandler().handle(request)
 
